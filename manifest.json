@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Podcast Sorter",
+  "description": "An extension to sort your Google Podcasts queue",
+  "version": "1.0",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/gpod_icon16.png",
+      "48": "images/gpod_icon48.png",
+      "128": "images/gpod_icon128.png"
+    }
+  },
+  "icons": {
+    "16": "images/gpod_icon16.png",
+    "48": "images/gpod_icon48.png",
+    "128": "images/gpod_icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://podcasts.google.com/*"],
+      "js": ["contentScript.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["contentScript.js"],
+      "matches": ["https://podcasts.google.com/*"]
+    }
+  ]
+}
