@@ -16,38 +16,51 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
   }
 
   const tab = tabs[0];
-  if (!tab.url.startsWith("https://podcasts.google.com/")) {
+  const correctUrl = "https://podcasts.google.com/queue";
+  
+  if (tab.url.startsWith("https://podcasts.google.com/")) {
+    if (tab.url !== correctUrl) {
+      // Show the wrong page message
+      document.getElementById("content").style.display = "none";
+      document.getElementById("wrongPage").style.display = "block";
+      return;
+    }
+    
+    document.getElementById("content").style.display = "grid";
+    document.getElementById("wrongPage").style.display = "none";
+
+    if (!listenersAdded) {
+      chrome.scripting.executeScript({
+        target: {tabId: tab.id},
+        files: ['contentScript.js']
+      }, function() {
+        if (chrome.runtime.lastError) {
+          console.error("Error injecting content script:", chrome.runtime.lastError.message);
+          return;
+        }
+
+        document.getElementById('countPodcasts').addEventListener('click', debounce(function () {
+          chrome.tabs.sendMessage(tab.id, {action: "countPodcasts"});
+        }, 300));
+
+        document.getElementById('sortOldest').addEventListener('click', debounce(function () {
+          chrome.tabs.sendMessage(tab.id, {action: "sortOldest"});
+        }, 300));
+
+        document.getElementById('sortNewest').addEventListener('click', debounce(function () {
+          chrome.tabs.sendMessage(tab.id, {action: "sortNewest"});
+        }, 300));
+
+        document.getElementById('saveListOrder').addEventListener('click', debounce(function () {
+          chrome.tabs.sendMessage(tab.id, {action: "saveListOrder"});
+        }, 300));
+
+        listenersAdded = true;
+      });
+    }
+  } else {
     console.error("This extension is only for use on Google Podcasts Queue.");
-    return;
-  }
-
-  if (!listenersAdded) {
-    chrome.scripting.executeScript({
-      target: {tabId: tab.id},
-      files: ['contentScript.js']
-    }, function() {
-      if (chrome.runtime.lastError) {
-        console.error("Error injecting content script:", chrome.runtime.lastError.message);
-        return;
-      }
-
-      document.getElementById('countPodcasts').addEventListener('click', debounce(function () {
-        chrome.tabs.sendMessage(tab.id, {action: "countPodcasts"});
-      }, 300));
-
-      document.getElementById('sortOldest').addEventListener('click', debounce(function () {
-        chrome.tabs.sendMessage(tab.id, {action: "sortOldest"});
-      }, 300));
-
-      document.getElementById('sortNewest').addEventListener('click', debounce(function () {
-        chrome.tabs.sendMessage(tab.id, {action: "sortNewest"});
-      }, 300));
-
-      document.getElementById('saveListOrder').addEventListener('click', debounce(function () {
-        chrome.tabs.sendMessage(tab.id, {action: "saveListOrder"});
-      }, 300));
-
-      listenersAdded = true;
-    });
+    document.getElementById("content").style.display = "none";
+    document.getElementById("wrongPage").style.display = "block";
   }
 });

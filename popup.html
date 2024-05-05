@@ -5,10 +5,13 @@
   </head>
   <body>
     <div id="content">
-      <button id="countPodcasts">Count Podcasts</button>
-      <button id="sortOldest">Sort Oldest First</button>
-      <button id="sortNewest">Sort Newest First</button>
-      <button id="saveListOrder">Save List Order</button>
+      <button id="countPodcasts" class="button1">Count Podcasts</button>
+      <div class="sortButtons">
+        <button id="sortOldest" class="button2">Sort Oldest First</button>
+        <button id="sortNewest" class="button3">Sort Newest First</button>
+      </div>
+      <button id="saveListOrder" class="button4">Save List Order</button>
+      <p>*Warning: This is prototype code that messes with your DOM. 'Save' may cause irreversible changes</p>
     </div>
     <div id="wrongPage" style="display: none">
       <p>
@@ -19,3 +22,55 @@
     <script src="popup.js"></script>
   </body>
 </html>
+
+<style>
+  body {
+    width: 220px;
+    display: grid;
+  	grid-template-columns: auto;
+  	padding: 10px;
+  }
+
+  #content {
+    display: grid;
+    gap: 10px;
+  }
+
+  .sortButtons {
+    display: flex;
+  }
+  
+  button {
+    background-color: rgba(242,243,244,255);
+    border: 1px solid darkslategrey;
+    padding: 10px;
+    text-align: center;
+    transition-duration: 0.4s;
+    cursor: pointer;
+  }
+
+  .button1:hover {
+    background-color: #0F9D58;
+    color: white;
+  }
+
+  .button2 {
+    border-right: 0;
+  }
+
+  .button2:hover {
+    background-color: #F4B400;
+    color: white;
+  }
+
+  .button3:hover {
+    background-color: #4285F4;
+    color: white;
+  }
+
+  .button4:hover {
+    background-color: #DB4437;
+    color: white;
+  }
+  
+</style>
