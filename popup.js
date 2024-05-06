@@ -16,16 +16,9 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
   }
 
   const tab = tabs[0];
-  const correctUrl = "https://podcasts.google.com/queue";
-  
-  if (tab.url.startsWith("https://podcasts.google.com/")) {
-    if (tab.url !== correctUrl) {
-      // Show the wrong page message
-      document.getElementById("content").style.display = "none";
-      document.getElementById("wrongPage").style.display = "block";
-      return;
-    }
-    
+  const correctUrlPattern = /^https:\/\/podcasts\.google\.com\/(u\/\d+\/)?queue(\?pageId=none)?$/;
+
+  if (correctUrlPattern.test(tab.url)) {
     document.getElementById("content").style.display = "grid";
     document.getElementById("wrongPage").style.display = "none";
 

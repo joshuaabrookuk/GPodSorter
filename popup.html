@@ -2,16 +2,19 @@
 <html>
   <head>
     <title>Podcast Sorter</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sansation:wght@100;400;700&display=swap">
   </head>
   <body>
     <div id="content">
+      <img src="./images/gpod_icon128.png" class="logoImage"></img>
+      <h1>GPodSorter</h1>
       <button id="countPodcasts" class="button1">Count Podcasts</button>
       <div class="sortButtons">
         <button id="sortOldest" class="button2">Sort Oldest First</button>
         <button id="sortNewest" class="button3">Sort Newest First</button>
       </div>
       <button id="saveListOrder" class="button4">Save List Order</button>
-      <p>*Warning: This is prototype code that messes with your DOM. 'Save' may cause irreversible changes</p>
+      <p>*Warning: This is prototype code that messes with your DOM. 'Save' may cause irreversible changes.</p>
     </div>
     <div id="wrongPage" style="display: none">
       <p>
@@ -25,7 +28,7 @@
 
 <style>
   body {
-    width: 220px;
+    width: 200px;
     display: grid;
   	grid-template-columns: auto;
   	padding: 10px;
@@ -71,6 +74,22 @@
   .button4:hover {
     background-color: #DB4437;
     color: white;
+  }
+
+  .logoImage {
+    margin: auto;
+  }
+
+  h1 {
+    font-family: 'Sansation', sans-serif;
+    font-weight: 500;  
+    margin: auto;
+    padding-bottom: 10px;
+  }
+
+  p {
+    margin-top: 0;
+    color: lightgray;
   }
   
 </style>

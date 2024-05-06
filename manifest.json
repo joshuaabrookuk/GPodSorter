@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Podcast Sorter",
   "description": "An extension to sort your Google Podcasts queue",
+  "license": "MIT",
   "version": "1.0",
   "permissions": ["activeTab", "scripting"],
   "action": {
