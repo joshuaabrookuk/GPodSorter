@@ -1,33 +1,38 @@
 (function () {
-
     let statusDiv = null;
+    let isSaving = false;
+    let sortedPods = null;
 
-    function createStatusDiv() {
-        if (statusDiv === null) {
-            const existingDiv = document.getElementById('podcastSorterStatusDiv');
-            if (existingDiv) {
-                statusDiv = existingDiv;
-            } else {
-                const div = document.createElement('div');
-                div.id = 'podcastSorterStatusDiv';
-                div.style.position = 'fixed';
-                div.style.top = '50%';
-                div.style.left = '50%';
-                div.style.transform = 'translate(-50%, -50%)';
-                div.style.backgroundColor = 'white';
-                div.style.padding = '10px';
-                div.style.border = '2px solid grey';
-                div.style.zIndex = '1000';
-                div.style.display = 'none';
-                document.body.appendChild(div);
-                statusDiv = div;
-            }
+    // Helper function for creating or retrieving the status div
+    function getStatusDiv() {
+        if (!statusDiv) {
+            statusDiv = document.getElementById('podcastSorterStatusDiv') || createStatusDiv();
         }
         return statusDiv;
     }
 
+    // Function to create a new status div
+    function createStatusDiv() {
+        const div = document.createElement('div');
+        div.id = 'podcastSorterStatusDiv';
+        Object.assign(div.style, {
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'white',
+            padding: '10px',
+            border: '2px solid grey',
+            zIndex: '1000',
+            display: 'none',
+        });
+        document.body.appendChild(div);
+        return div;
+    }
+
+    // Function to show the status div with a message for a given duration
     function showStatusDiv(message, hideAfter = 2000) {
-        const div = createStatusDiv();
+        const div = getStatusDiv();
         div.textContent = message;
         div.style.display = 'block';
 
@@ -38,11 +43,15 @@
         }
     }
 
+    // Function to update the status while processing
     function updateStatus(index, totalPods) {
-        const message = index === totalPods - 1 ? 'Podcasts reordered' : `Processing item ${index + 1} of ${totalPods}. Please wait`;
+        const message = index === totalPods - 1
+            ? 'Podcasts reordered'
+            : `Processing item ${index + 1} of ${totalPods}. Please wait`;
         showStatusDiv(message, null);
     }
 
+    // Function to count the number of podcasts
     function countPodcasts() {
         const list = document.querySelector('div[role="list"]');
 
@@ -58,11 +67,12 @@
         return count;
     }
 
+    // Function to remove decorative divs from the list
     function removeDecorativeDivs(list) {
-        const decorativeDivs = list.querySelectorAll('.GdsSec');
-        decorativeDivs.forEach(div => div.remove());
+        list.querySelectorAll('.GdsSec').forEach(div => div.remove());
     }
 
+    // Function to add decorative divs to the list
     function addDecorativeDivs(list, pods) {
         pods.forEach((item, index) => {
             list.appendChild(item);
@@ -74,7 +84,53 @@
         });
     }
 
-    function sortOldestFirst(list) {
+    // Function to parse a date from a string
+    function parseDate(dateStr) {
+        const timeUnits = {
+            days: 86400,
+            hours: 3600,
+            minutes: 60,
+            seconds: 1
+        };
+
+        for (const [unit, ms] of Object.entries(timeUnits)) {
+            const match = dateStr.match(new RegExp(`(\\d+) ${unit}? ago`));
+            if (match) {
+                const value = parseInt(match[1], 10);
+                return new Date(Date.now() - value * ms);
+            }
+        }
+
+        return new Date(dateStr);
+    }
+    
+    // Function to parse time from a string
+    function parseTime(timeStr) {
+        const timeUnits = {
+            'hr': 3600,
+            'min': 60,
+            'sec': 1
+        };
+    
+        let totalSeconds = 0;
+        timeStr = timeStr.replace(' left', '');
+    
+        const timeRegex = /(\d+)\s*([a-zA-Z]+)/g;
+        let match;
+    
+        while ((match = timeRegex.exec(timeStr)) !== null) {
+            const value = parseInt(match[1], 10);
+            const unit = match[2].toLowerCase();
+            const seconds = value * (timeUnits[unit] || 0);
+            totalSeconds += seconds;
+        }
+    
+        return totalSeconds
+    }
+    
+
+    // Function to sort podcasts by date
+    function sortDate(list, order) {
         if (!list) return;
 
         const pods = Array.from(list.querySelectorAll('.jJ8Epb'));
@@ -85,77 +141,48 @@
         pods.sort((a, b) => {
             const dateA = parseDate(a.querySelector('.c5Vdrc').textContent);
             const dateB = parseDate(b.querySelector('.c5Vdrc').textContent);
-            return dateA - dateB;
+            return order === "newest" ? dateA - dateB : dateB - dateA;
         });
 
         addDecorativeDivs(list, pods);
-        showStatusDiv(`Podcasts sorted: Oldest first`);
+        showStatusDiv(`Podcasts sorted: ${order === "newest" ? "Oldest" : "Newest"} first`);
 
         return pods;
     }
 
-    function sortNewestFirst(list) {
-        if (!list) return;
+        // Function to sort podcasts by time
+        function sortTime(list, order) {
+            if (!list) return;
+        
+            const pods = Array.from(list.querySelectorAll('.jJ8Epb'));
+            if (pods.length === 0) return;
+        
+            removeDecorativeDivs(list);
+        
+            pods.sort((a, b) => {
+                const elementA = a.querySelector('.gUJ0Wc');
+                const elementB = b.querySelector('.gUJ0Wc');
+        
+                const timeA = elementA ? parseTime(elementA.textContent) : 0;
+                const timeB = elementB ? parseTime(elementB.textContent) : 0;
+        
+                return order === "shortest" ? timeA - timeB : timeB - timeA;
+            });
 
-        const pods = Array.from(list.querySelectorAll('.jJ8Epb'));
-        if (pods.length === 0) return;
 
-        removeDecorativeDivs(list);
-
-        pods.sort((b, a) => {
-            const dateA = parseDate(a.querySelector('.c5Vdrc').textContent);
-            const dateB = parseDate(b.querySelector('.c5Vdrc').textContent);
-            return dateA - dateB;
-        });
-
-        addDecorativeDivs(list, pods);
-        showStatusDiv(`Podcasts sorted: Newest first`);
-
-        return pods;
-    }
-
-    function parseDate(dateStr) {
-        const daysAgoMatch = dateStr.match(/(\d+) days? ago/);
-        if (daysAgoMatch) {
-            const daysAgo = parseInt(daysAgoMatch[1], 10);
-            const date = new Date();
-            date.setDate(date.getDate() - daysAgo);
-            return date;
+        
+            addDecorativeDivs(list, pods);
+            showStatusDiv(`Podcasts sorted: ${order === "shortest" ? "Shortest" : "Longest"} first`);
+        
+            return pods;
         }
 
-        const hoursAgoMatch = dateStr.match(/(\d+) hours? ago/);
-        if (hoursAgoMatch) {
-            const hoursAgo = parseInt(hoursAgoMatch[1], 10);
-            const date = new Date();
-            date.setHours(date.getHours() - hoursAgo);
-            return date;
-        }
-
-        const minutesAgoMatch = dateStr.match(/(\d+) minutes? ago/);
-        if (minutesAgoMatch) {
-            const minutesAgo = parseInt(minutesAgoMatch[1], 10);
-            const date = new Date();
-            date.setMinutes(date.getMinutes() - minutesAgo);
-            return date;
-        }
-
-        const secondsAgoMatch = dateStr.match(/(\d+) seconds? ago/);
-        if (secondsAgoMatch) {
-            const secondsAgo = parseInt(secondsAgoMatch[1], 10);
-            const date = new Date();
-            date.setSeconds(date.getSeconds() - secondsAgo);
-            return date;
-        }
-
-        return new Date(dateStr);
-    }
-
+    // Function to sleep for a specified number of milliseconds
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    let isSaving = false;
-
+    // Function to save the order of the podcast list
     async function saveListOrder(pods) {
         if (isSaving) return;
         isSaving = true;
@@ -177,13 +204,17 @@
         isSaving = false;
     }
 
-    let sortedPods = null;
-
+    // Handle incoming messages
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+        const list = document.querySelector("div[role='list']");
         if (request.action === "sortOldest") {
-            sortedPods = sortOldestFirst(document.querySelector("div[role='list']"));
+            sortedPods = sortDate(list, 'newest');
         } else if (request.action === "sortNewest") {
-            sortedPods = sortNewestFirst(document.querySelector("div[role='list']"));
+            sortedPods = sortDate(list, 'oldest');
+        } else if (request.action === "sortShortest") {
+            sortedPods = sortTime(list, 'shortest');
+        } else if (request.action === "sortLongest") {
+            sortedPods = sortTime(list, 'longest');
         } else if (request.action === "saveListOrder") {
             if (sortedPods) {
                 saveListOrder(sortedPods);
@@ -194,4 +225,5 @@
             countPodcasts();
         }
     });
+
 })();

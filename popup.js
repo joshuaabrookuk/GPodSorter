@@ -44,6 +44,14 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
           chrome.tabs.sendMessage(tab.id, {action: "sortNewest"});
         }, 300));
 
+        document.getElementById('sortShortest').addEventListener('click', debounce(function () {
+          chrome.tabs.sendMessage(tab.id, {action: "sortShortest"});
+        }, 300));
+
+        document.getElementById('sortLongest').addEventListener('click', debounce(function () {
+          chrome.tabs.sendMessage(tab.id, {action: "sortLongest"});
+        }, 300));
+
         document.getElementById('saveListOrder').addEventListener('click', debounce(function () {
           chrome.tabs.sendMessage(tab.id, {action: "saveListOrder"});
         }, 300));
