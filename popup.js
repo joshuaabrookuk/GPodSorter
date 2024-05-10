@@ -36,6 +36,10 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
           chrome.tabs.sendMessage(tab.id, {action: "countPodcasts"});
         }, 300));
 
+        document.getElementById('clearCompletedPodcasts').addEventListener('click', debounce(function () {
+          chrome.tabs.sendMessage(tab.id, {action: "clearCompletedPodcasts"});
+        }, 300));
+
         document.getElementById('sortOldest').addEventListener('click', debounce(function () {
           chrome.tabs.sendMessage(tab.id, {action: "sortOldest"});
         }, 300));

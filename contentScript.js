@@ -103,7 +103,7 @@
 
         return new Date(dateStr);
     }
-    
+
     // Function to parse time from a string
     function parseTime(timeStr) {
         const timeUnits = {
@@ -111,23 +111,23 @@
             'min': 60,
             'sec': 1
         };
-    
+
         let totalSeconds = 0;
         timeStr = timeStr.replace(' left', '');
-    
+
         const timeRegex = /(\d+)\s*([a-zA-Z]+)/g;
         let match;
-    
+
         while ((match = timeRegex.exec(timeStr)) !== null) {
             const value = parseInt(match[1], 10);
             const unit = match[2].toLowerCase();
             const seconds = value * (timeUnits[unit] || 0);
             totalSeconds += seconds;
         }
-    
+
         return totalSeconds
     }
-    
+
 
     // Function to sort podcasts by date
     function sortDate(list, order) {
@@ -150,32 +150,70 @@
         return pods;
     }
 
-        // Function to sort podcasts by time
-        function sortTime(list, order) {
-            if (!list) return;
-        
-            const pods = Array.from(list.querySelectorAll('.jJ8Epb'));
-            if (pods.length === 0) return;
-        
-            removeDecorativeDivs(list);
-        
-            pods.sort((a, b) => {
-                const elementA = a.querySelector('.gUJ0Wc');
-                const elementB = b.querySelector('.gUJ0Wc');
-        
-                const timeA = elementA ? parseTime(elementA.textContent) : 0;
-                const timeB = elementB ? parseTime(elementB.textContent) : 0;
-        
-                return order === "shortest" ? timeA - timeB : timeB - timeA;
-            });
+    // Function to sort podcasts by time
+    function sortTime(list, order) {
+        if (!list) return;
+
+        const pods = Array.from(list.querySelectorAll('.jJ8Epb'));
+        if (pods.length === 0) return;
+
+        removeDecorativeDivs(list);
+
+        pods.sort((a, b) => {
+            const elementA = a.querySelector('.gUJ0Wc');
+            const elementB = b.querySelector('.gUJ0Wc');
+
+            const timeA = elementA ? parseTime(elementA.textContent) : 0;
+            const timeB = elementB ? parseTime(elementB.textContent) : 0;
+
+            return order === "shortest" ? timeA - timeB : timeB - timeA;
+        });
 
 
-        
-            addDecorativeDivs(list, pods);
-            showStatusDiv(`Podcasts sorted: ${order === "shortest" ? "Shortest" : "Longest"} first`);
-        
-            return pods;
+
+        addDecorativeDivs(list, pods);
+        showStatusDiv(`Podcasts sorted: ${order === "shortest" ? "Shortest" : "Longest"} first`);
+
+        return pods;
+    }
+
+// Function to un-click completed podcasts
+async function clearCompletedPodcasts(list) {
+    if (!list) return;
+
+    const pods = Array.from(list.querySelectorAll('.jJ8Epb'));
+    if (pods.length === 0) return;
+
+    const completedPods = pods.filter(pod => {
+        const statusElement = pod.querySelector('.ik386c');
+        if (statusElement) {
+            const podStatus = statusElement.textContent;
+            console.log(podStatus);
+            return podStatus === 'Completed';
         }
+        return false;
+    });
+
+    for (let index = 0; index < completedPods.length; index++) {
+        const pod = completedPods[index];
+        const addButton = pod.querySelector('.bPsqDc');
+        if (addButton) {
+            updateStatus(index, completedPods.length);
+            addButton.click();
+            await sleep(1000);
+        }
+    }
+
+    if (completedPods.length > 0) {
+        showStatusDiv(`${completedPods.length} completed podcasts cleared`);
+        await sleep(1000);
+        window.location.reload();
+    } else {
+        showStatusDiv('No completed podcasts found');
+    }
+}
+
+
 
     // Function to sleep for a specified number of milliseconds
     function sleep(ms) {
@@ -215,6 +253,8 @@
             sortedPods = sortTime(list, 'shortest');
         } else if (request.action === "sortLongest") {
             sortedPods = sortTime(list, 'longest');
+        } else if (request.action === "clearCompletedPodcasts") {
+            sortedPods = clearCompletedPodcasts(list);
         } else if (request.action === "saveListOrder") {
             if (sortedPods) {
                 saveListOrder(sortedPods);
