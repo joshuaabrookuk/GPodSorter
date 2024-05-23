@@ -3,6 +3,11 @@
 
 A prototype Chrome extension to sort your Google Podcasts queue.
 
+Watch the demo on YouTube below.
+
+[![GPodSorter Youtube Thumbnail](./images/GPodSorterYoutubeThumbnail.png)](https://www.youtube.com/watch?v=LsQ4_v4z14U)
+
+
 ## Description
 
 Fed up of manually swiping podcasts in the order I wanted, I wrote a little bit of javascript to reorder them. Saving the queue order was a bit messy, having to manually target the button and simulate a click. I found this collection of js useful so I packaged it into an extension.
